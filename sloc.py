@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+# From here https://github.com/Dandigit/sloc
 import os
 import sys
 
@@ -41,7 +41,8 @@ def countLinesInFile(fileName):
             for i, l in enumerate(file, 1):
                 pass
     except (UnicodeDecodeError, UnicodeEncodeError):
-        print(f"Warning: did not process file: {fileName} as valid Unicode text.")
+        print(
+            f"Warning: did not process file: {fileName} as valid Unicode text.")
         return 0
 
     print(f"Counted {i} lines in file {fileName}.")
