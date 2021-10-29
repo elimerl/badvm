@@ -1,25 +1,4 @@
-#[repr(u8)]
-#[derive(Debug, PartialEq, Eq)]
-pub enum Instruction {
-    Nop = 0x00,
-    Halt,
-    Push,
-    Pop,
-    Add,
-    Mul,
-    Sub,
-    Div,
-    Jump,
-    LoadU8,
-    StoreU8,
-    Swap,
-    Dupe,
-    DupeAt,
-    Interrupt,
-    Call,
-    Ret,
-}
-
+use crate::Instruction;
 pub fn assemble(str: String) -> Vec<u8> {
     let mut out: Vec<u8> = Vec::new();
 

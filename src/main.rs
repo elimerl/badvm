@@ -5,6 +5,7 @@ extern crate minifb;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::sync::mpsc::channel;
+use std::sync::{Arc, Mutex};
 use std::thread::sleep;
 use std::{env, thread};
 
@@ -21,6 +22,10 @@ use crate::compiler::compile;
 use crate::vm::DisplayInfo;
 use asm::assemble;
 mod compiler;
+#[path = "instr.rs"]
+pub mod instr;
+use instr::Instruction;
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
     let mut opts = Options::new();
@@ -29,9 +34,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             opts.optflag("w", "window", "open window");
         }
         "asm" => {}
-        "cc" => {
-            // todo
-        }
+        "disasm" => {}
+        "cc" => {}
         _ => {
             println!("HELP MESSAGE");
             return Ok(());
@@ -74,6 +78,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 },
                 Some(mut window) => {
                     let (sender, reciever) = channel::<Vec<u32>>();
+                    let alive = Arc::new(Mutex::<bool>::new(true));
                     thread::spawn(move || {
                         let _updater = Updater::new(2).start().unwrap();
                         let mut last_tick = Instant::now();
@@ -85,7 +90,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                     break;
                                 }
                             }
-
+                            if vm.paused {
+                                println!("paused {:?}", vm);
+                                break;
+                            }
                             if last_tick.elapsed_since_recent() > Duration::from_millis(16) {
                                 let pixels = vm.framebuffer.clone();
                                 sender.send(pixels).unwrap();
@@ -97,7 +105,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     });
                     // Limit to max ~60 fps update rate
                     window.limit_update_rate(Some(std::time::Duration::from_micros(16600)));
-                    while window.is_open() && !window.is_key_down(Key::Escape) {
+                    while window.is_open()
+                        && !window.is_key_down(Key::Escape)
+                        && *alive.lock().unwrap()
+                    {
                         let fb = reciever.recv()?;
                         window.update_with_buffer(&fb, WIDTH, HEIGHT)?;
                     }
@@ -127,6 +138,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     file.write_all(&compile(code)).unwrap();
                 }
             }
+        }
+        "disasm" => {
+            println!("Disassembly");
+            let mut code: Vec<u8> = Vec::new();
+            let mut file = File::open(env::current_dir()?.join("test.bin"))?;
+            file.read_to_end(&mut code)?;
+            let vm = VM::new(
+                code,
+                vec![0; WIDTH * HEIGHT],
+                DisplayInfo {
+                    width: WIDTH,
+                    height: HEIGHT,
+                },
+            );
+            println!("{:?}", vm);
         }
         _ => println!("Unrecognized command"),
     }

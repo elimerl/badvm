@@ -8,7 +8,7 @@ pub enum Token {
     Int,
     Return,
     Identifier(String),
-    Integer(i32),
+    Integer(i64),
     End, // Plus,
          // Minus,
          // Star,

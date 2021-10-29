@@ -1,6 +1,6 @@
 use num_enum::TryFromPrimitive;
 #[repr(u8)]
-#[derive(Debug, PartialEq, Eq, TryFromPrimitive)]
+#[derive(Debug, PartialEq, Eq, TryFromPrimitive, Clone, Copy)]
 pub enum Instruction {
     Nop = 0x00,
     Halt,

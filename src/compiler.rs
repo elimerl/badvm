@@ -1,5 +1,7 @@
-use self::{lexer::lex, parser::parse};
+use self::{emitter::emit, lexer::lex, parser::parse};
 
+#[path = "emitter.rs"]
+mod emitter;
 #[path = "lexer.rs"]
 mod lexer;
 #[path = "parser.rs"]

@@ -1,10 +1,8 @@
 use num_enum::TryFromPrimitiveError;
 use std::{convert::TryInto, error::Error, fmt, mem::size_of};
 type VMResult<T> = std::result::Result<T, VMError>;
+use super::Instruction;
 use ansi_term::Colour::*;
-#[path = "instr.rs"]
-mod instr;
-use instr::Instruction;
 // Define our error types. These may be customized for our error handling cases.
 // Now we will be able to write our own errors, defer to an underlying error
 // implementation, or do something in between.
@@ -50,7 +48,6 @@ impl VM {
     pub fn new(code: Vec<u8>, framebuffer: Vec<u32>, display: DisplayInfo) -> VM {
         let len = code.len();
         let mem = [code, Vec::with_capacity(65355 - len)].concat();
-        println!("{}", mem.len());
         VM {
             memory: mem,
             framebuffer,
@@ -86,6 +83,7 @@ impl VM {
                     Instruction::Nop => {}
                     Instruction::Halt => {
                         vm.stop();
+                        return Ok(());
                     }
                     Instruction::Push => {
                         vm.stack.push(i64::from_le_bytes(
